@@ -32,11 +32,12 @@ void Malla::agregarObjeto(Objeto aux){
     objetos.push_back(aux);
 }
 
-Objeto Malla::buscarObjeto(string ss){
+Objeto& Malla::buscarObjeto(string ss){
+    Objeto temp("noexiste");
     for(int i=0;i<objetos.size();i++){
         if(objetos[i].getNombre() == ss ) return objetos[i];
     }
-    return NULL;
+    return temp;
 }
 
 #endif //__MALLAS__HXX__

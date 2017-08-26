@@ -29,7 +29,7 @@ class Objeto{
 class Malla{
     public:
     void agregarObjeto(Objeto aux);
-    Objeto buscarObjeto(string ss);
+    Objeto& buscarObjeto(string ss);
     // faltan mas funciones
     protected:
     vector< Objeto > objetos;
