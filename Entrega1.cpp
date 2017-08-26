@@ -58,7 +58,7 @@ int main(){
 
 void imprimirMenu(){
 
-    cout <<"1. Cargar Objeto en memoria\n";
+    cout << "1. Cargar Objeto en memoria\n";
     cout << "2. Listar Objetos en memoria\n";
     cout << "3. Crear envolvente para un objeto\n";
     cout << "4. Crear envolvente para los objetos cargados en memoria\n" ;
