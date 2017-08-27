@@ -4,15 +4,15 @@
 using namespace std;
 
 struct punto{
-    int x;
-    int y;
-    int z;
+    float x;
+    float y;
+    float z;
 };
 
 class Objeto{
     public:
         Objeto(string nom);
-        void agregarVertice(int xx, int yy,int zz);
+        void agregarVertice(float xx, float yy,float zz);
         void agregarCara( vector<int> relaciones);
 
         vector<punto> getVert();

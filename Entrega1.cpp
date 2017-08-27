@@ -95,7 +95,7 @@ void cargarArchivo(Malla& mal, string ss)
             return;
         }
         while(cant--){
-            int x,y,z;
+            float x,y,z;
             in>>x;
             in>>y;
             in>>z;

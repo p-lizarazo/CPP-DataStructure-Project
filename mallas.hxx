@@ -7,7 +7,7 @@ Objeto::Objeto(string nom){
     nombre=nom;
 }
 
-void Objeto::agregarVertice(int xx,int yy,int zz){
+void Objeto::agregarVertice(float xx,float yy,float zz){
     punto aux;
     aux.x=xx; aux.y=yy; aux.z=zz;
     vertices.push_back(aux);
