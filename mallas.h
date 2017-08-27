@@ -28,11 +28,12 @@ class Objeto{
 
 class Malla{
     public:
-    void agregarObjeto(Objeto aux);
-    Objeto& buscarObjeto(string ss);
+    void agregarObjeto(Objeto& aux);
+    int buscarObjeto(string ss);
+    vector<Objeto>& getObjetos();
     // faltan mas funciones
     protected:
-    vector< Objeto > objetos;
+    vector<Objeto> objetos;
     // posible algo de aristas
 };
 

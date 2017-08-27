@@ -28,16 +28,23 @@ string Objeto::getNombre(){
     return nombre;
 }
 
-void Malla::agregarObjeto(Objeto aux){
+void Malla::agregarObjeto(Objeto& aux){
     objetos.push_back(aux);
 }
 
-Objeto& Malla::buscarObjeto(string ss){
-    Objeto temp("noexiste");
+int Malla::buscarObjeto(string ss){
+    if(objetos.empty())
+        return -1;
     for(int i=0;i<objetos.size();i++){
-        if(objetos[i].getNombre() == ss ) return objetos[i];
+        if(objetos[i].getNombre() == ss )
+            return i;
     }
-    return temp;
+    return -1;
+}
+
+vector<Objeto>& Malla::getObjetos()
+{
+    return objetos;
 }
 
 #endif //__MALLAS__HXX__
