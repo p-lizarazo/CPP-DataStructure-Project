@@ -25,7 +25,7 @@ void eliminarObjeto(Malla& mal, string ss);
 void obtVertices(Objeto obj, vector<float>& puntos);
 void envolvente(Malla& mal, string ss);
 void envolvente(Malla& mal);
-
+void guardarObjeto(Malla& mal,string fileName,string objName);
 
 int main(){
     Malla mal;
@@ -317,5 +317,36 @@ void envolvente(Malla& mal)
     }
     mal.agregarObjeto(*env);
     cout<<"La caja envolvente de los objetos en memoria se ha generado exitosamente con el nombre "<<(*env).getNombre()<<".\n";
+}
+
+void guardarObjeto(Malla& mal,string fileName,string objName){
+    const char* rr=fileName.c_str();
+    int i;
+    i=mal.buscarObjeto(objName);
+    if(i==-1){
+        cout << "El objeto " << objName << " no ha sido cargado en memoria.\n";
+        return;
+    } else {
+        ofstream out (rr);
+       vector<Objeto> x=mal.getObjetos();
+       Objeto temp = x[i];
+       out << temp.getNombre() << endl;
+       vector < punto > vert=temp.getVert();
+       out << vert.size() << endl;
+       for(int i=0;i<vert.size();i++){
+        out << vert[i].x << " " << vert[i].y << " " << vert[i].z << endl;
+       }
+       vector < vector<int> > c = temp.getCar();
+        for(int i=0; i<c.size();i++){
+            out << c[i].size() << " ";
+            for(int j=0;j<c[i].size();j++){
+                out << c[i][j] << " ";
+            }
+            out << endl;
+        }
+        out << "-1\n";
+        cout << "La información del objeto " << objName << " ha sido guardada exitosamente en el archivo " << fileName;
+        return;
+    }
 }
 
