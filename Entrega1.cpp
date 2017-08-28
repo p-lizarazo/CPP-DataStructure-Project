@@ -29,42 +29,123 @@ void guardarObjeto(Malla& mal,string fileName,string objName);
 
 int main(){
     Malla mal;
-    string fileName;
-    int op;
+    string fileName, op, act;
     bool inf=true;
     while(inf){
-        imprimirMenu();
-        cin >> op;
-        switch(op){
-        case 1:
-            printf("\nEscribe el nombre del archivo a abrir: ");
-            cin >> fileName;
-            cargarArchivo(mal, fileName);
-            break;
-        case 2:
-            listar(mal);
-            break;
-        case 3:
-            printf("\nEscribe el nombre del Objeto a calcular envolvente: ");
-            cin >> fileName;
-            envolvente(mal, fileName);
-
-            break;
-        case 4:
-            envolvente(mal);
-            break;
-        case 5:
-            printf("\nEscribe el nombre del objeto a borrar: ");
-            cin >> fileName;
-            eliminarObjeto(mal, fileName);
-            break;
-        case 6:
-            break;
-        case 7:
-            inf=false;
-            break;
+        printf("$ ");
+        stringstream ss;
+        getline(cin, op);
+        ss << op;
+        ss >> act;
+        if(act == "ayuda")
+        {
+            ss >> act;
+            if(act == "ayuda")
+            {
+                printf("Los comandos validos son los siguientes:\ncargar\t\tlistado\t\tenvolvente\ndescargar\tguardar\t\tsalir\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "cargar")
+            {
+                printf("cargar nombre_archivo\n\nCarga en memoria la informacion del objeto nombre_objeto contenida en el archivo identificado por nombre_archivo.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "listado")
+            {
+                printf("listado\n\nLista todos los objetos en memoria. Dando: su nombre, # de vertices, # de caras y # de aristas.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "envolvente")
+            {
+                printf("envolvente\nenvolvente nombre_objeto\n\nCrea una caja envolvente que cubre todos los objetos o uno en particular, luego la guarda en la malla de objetos.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "descargar")
+            {
+                printf("descargar nombre_objeto\n\nDescarga un objeto de memoria.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "guardar")
+            {
+                printf("guardar nombre_objeto nombre_archivo\n\nGuarda en un archivo de texto la informacion basica de un objeto.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "salir")
+            {
+                printf("salir\n\Cierra el programa\n\n");
+                ss.str("");
+            }
         }
-        printf("\n");
+        bool acc = true;
+        if(act == "cargar")
+        {
+            act="";
+            ss >> act;
+            if(act=="")
+                printf("No se han ingresado argumentos suficientes.\n\n");
+            else
+            {
+                ss >> act;
+                cargarArchivo(mal, act);
+            }
+            ss.str("");
+            continue;
+        }
+        if(act == "listado")
+        {
+            ss >> act;
+            if(act!="listado")
+                cout<<act<<" no es un argumento valido de listado.\n\n";
+            else
+                listar(mal);
+            ss.str("");
+            continue;
+        }
+        if(act == "envolvente")
+        {
+            act = "";
+            ss >> act;
+            if(act=="")
+                envolvente(mal);
+            else
+                envolvente(mal, act);
+
+            ss.str("");
+            continue;
+        }
+        if(act == "descargar")
+        {
+            act = "";
+            ss >> act;
+            if(act == "")
+                printf("No hay argumentos suficientes para la funcion descargar\n\n");
+            else
+                eliminarObjeto(mal, act);
+            ss.str("");
+            continue;
+        }
+        if(act == "guardar")
+        {
+            string act2 = act = "";
+            ss >> act;
+            ss >> act2;
+            if(act2 == "")
+                printf("No hay argumentos suficientes para la funcion guardar\n\n");
+            else
+                guardarObjeto(mal, act2, act);
+            ss.str("");
+            continue;
+        }
+        if(act == "salir")
+        {
+            inf=false;
+        }
     }
     return 0;
 }
@@ -345,7 +426,7 @@ void guardarObjeto(Malla& mal,string fileName,string objName){
             out << endl;
         }
         out << "-1\n";
-        cout << "La información del objeto " << objName << " ha sido guardada exitosamente en el archivo " << fileName;
+        cout << "La informacion del objeto " << objName << " ha sido guardada exitosamente en el archivo " << fileName<<"\n";
         return;
     }
 }
