@@ -2,6 +2,7 @@
 #define __MALLAS__HXX__
 
 #include <vector>
+#include <map>
 #include <sstream>
 #include <math.h>
 #include <iostream>
@@ -33,7 +34,7 @@ void Objeto::agregarVertice(float xx,float yy,float zz)
     vertices.push_back(aux);
 }
 
-void Objeto::agregarCara(vector<int> relaciones)
+void Objeto::agregarCara(vector<int>& relaciones)
 {
     caras.push_back(relaciones);
 }
@@ -146,27 +147,20 @@ string& Objeto::getNombre()
     return nombre;
 }
 
-void Malla::agregarObjeto(Objeto& aux)
+void Malla::agregarObjeto(Objeto* aux)
 {
-	if(buscarObjeto(aux.getNombre())==-1)
-	{
-    	objetos.push_back(aux);
-		return;
-	}
-    aux.cambiarNombre(aux.getNombre()+"*");
-    objetos.push_back(aux);
+    objetos[aux->getNombre()] = aux;
 }
 
-int Malla::buscarObjeto(string ss)
+bool Malla::hayObjeto(string ss)
 {
-    if(objetos.empty())
-        return -1;
-    for(int i=0; i<objetos.size(); i++)
-    {
-        if(objetos[i].getNombre() == ss )
-            return i;
-    }
-    return -1;
+    if(buscarObjeto(ss)==objetos.end())
+        return false;
+    return true;
+}
+map<string,Objeto*>::iterator Malla::buscarObjeto(string ss)
+{
+    return objetos.find(ss);
 }
 
 
@@ -200,20 +194,19 @@ Objeto& Objeto::envolvente()
 
 Objeto& Malla::envolvente(string s)
 {
-    return objetos[buscarObjeto(s)].envolvente();
+    return buscarObjeto(s)->second->envolvente();
 }
 
 Objeto& Malla::envolvente()
 {
     vector<float> fin (6);
     vector<float> temp (6);
-    objetos[0].obtVertices(fin);
-    int tam=objetos.size();
-    for(int i=1 ; i<tam ; ++i)
+    objetos.begin()->second->obtVertices(fin);
+    for(map<string, Objeto*>::iterator it = objetos.begin() ; it!=objetos.end() ; ++it)
     {
-        if(objetos[i].getVert().empty())
+        if(it->second->getVert().empty())
             continue;
-        objetos[i].obtVertices(temp);
+        it->second->obtVertices(temp);
         for(int j=0 ; j<3 ; ++j)
             if(temp[j]>fin[j])
                 fin[j]=temp[j];
@@ -225,7 +218,7 @@ Objeto& Malla::envolvente()
     stringstream ss;
     ss << a;
     string str = ss.str();
-    while(buscarObjeto("Envolvente_Malla_"+str)!=-1)
+    while(hayObjeto("Envolvente_Malla_"+str))
     {
         a++;
         ss.str("");
@@ -256,26 +249,26 @@ Objeto& Malla::envolvente()
     return *env;
 }
 
-pair<pair<float,int>,int> Malla::vCercano(punto& v)
+pair<pair<float,int>,map<string, Objeto*>::iterator> Malla::vCercano(punto& v)
 {
-	pair<pair<float, int>, int> fin;
+	pair<pair<float, int>, map<string, Objeto*>::iterator > fin;
 	pair<float, int> par;
 	int tam = objetos.size();
-	fin.first = objetos[0].vCercano(v);
-	fin.second = 0;
-	for(int i=1 ; i<tam ; ++i)
+	fin.first = objetos.begin()->second->vCercano(v);
+	fin.second = objetos.begin();
+	for(map<string, Objeto*>::iterator it=objetos.begin() ; it!=objetos.end() ; ++it)
 	{
-		par = objetos[i].vCercano(v);
+		par = it->second->vCercano(v);
 		if(par.first < fin.first.first)
 		{
 			fin.first = par;
-			fin.second = i;
+			fin.second = it;
 		}
 	}
 	return fin;
 }
 
-vector<Objeto>& Malla::getObjetos()
+map<string, Objeto*>& Malla::getObjetos()
 {
     return objetos;
 }

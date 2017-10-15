@@ -10,6 +10,7 @@
 #include <iostream>
 #include <fstream>
 #include <set>
+#include <map>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ using namespace std;
     Declaracion de funciones
 */
 void cargarArchivo(Malla& mal, string ss);
-void listarObjeto(Objeto obj);
+void listarObjeto(Objeto& obj);
 void listar(Malla mal);
 void eliminarObjeto(Malla& mal, string ss);
 void envolvente(Malla& mal, string ss);
@@ -26,6 +27,7 @@ void guardarObjeto(Malla& mal,string fileName,string objName);
 void vCercano(Malla& mal, string s, punto v);
 void vCercano(Malla& mal, punto v);
 void vCercanoCaja(Malla& mal, string s);
+int cantDig(int n);
 
 
 int main()
@@ -38,6 +40,7 @@ int main()
         printf("$ ");
         stringstream ss;
         getline(cin, op);
+        act="";
         ss << op;
         ss >> act;
         if(act == "ayuda")
@@ -219,6 +222,10 @@ int main()
             inf=false;
             continue;
         }
+        if(act == "")
+        {
+            continue;
+        }
         cout<<"El comando '"<<act<<"' no esta definido, escriba ayuda para mas informacion\n\n";
     }
     return 0;
@@ -232,8 +239,7 @@ void cargarArchivo(Malla& mal, string ss)
     {
         string nom;
         in>>nom;
-        int busq = mal.buscarObjeto(nom);
-        if(busq!=-1)
+        if(mal.hayObjeto(nom))
         {
             cout<<"El objeto "<<nom<<" ya ha sido cargado en memoria\n";
             in.close();
@@ -258,17 +264,17 @@ void cargarArchivo(Malla& mal, string ss)
         }
         while(in>>cant && cant!=-1)
         {
-            vector<int> vertices;
+            vector<int>* vertices = new vector<int>;
             int x;
             while(cant--)
             {
                 in>>x;
-                vertices.push_back(x);
+                vertices->push_back(x);
             }
-            (*temp).agregarCara(vertices);
+            temp->agregarCara(*vertices);
         }
         temp->definirAristas();
-        mal.agregarObjeto((*temp));
+        mal.agregarObjeto(temp);
         cout << "El objeto " << nom << " ha sido cargado exitosamente del archivo " << rr <<endl;
         in.close();
     }
@@ -278,7 +284,7 @@ void cargarArchivo(Malla& mal, string ss)
     }
 }
 
-void listarObjeto(Objeto obj)
+void listarObjeto(Objeto& obj)
 {
     cout<<" - "<<obj.getNombre()<<" "<<obj.getVert().size()<<" vertices, "<<obj.cantAristas()<<" aristas y "<<obj.getCar().size()<<" caras.";
 }
@@ -292,36 +298,35 @@ void listar(Malla mal)
         return;
     }
     cout<<"Hay "<<n<<" objeto(s) en memoria:\n";
-    for(int i=0 ; i<n ; ++i)
+    for(map<string, Objeto*>::iterator it=mal.getObjetos().begin() ; it!=mal.getObjetos().end() ; ++it)
     {
-        listarObjeto(mal.getObjetos()[i]);
+        listarObjeto(*(it->second));
         printf("\n");
     }
 }
 
 void eliminarObjeto(Malla& mal, string ss)
 {
-    int t = mal.buscarObjeto(ss);
-    if(t==-1)
+    if(!mal.hayObjeto(ss))
     {
         cout<<"El Objeto "<<ss<<" no esta cargado actualmente\n";
         return;
     }
-    mal.getObjetos().erase(mal.getObjetos().begin()+t);
+    mal.getObjetos().erase(mal.buscarObjeto(ss));
     cout<<"El objeto "<<ss<<" fue eliminado de la memoria\n";
 }
 
 void envolvente(Malla& mal, string ss)
 {
-    int pos = mal.buscarObjeto(ss);
-    if(pos==-1)
+    if(!mal.hayObjeto(ss))
     {
         printf("El objeto no esta cargado en memoria.\n");
         return;
     }
-    Objeto obj = mal.envolvente(ss);
+    Objeto* obj;
+    obj = &mal.envolvente(ss);
     mal.agregarObjeto(obj);
-    cout<<"La caja envolvente del objeto "<<ss<<" ha sido cargada exitosamente con el nombre "<<obj.getNombre()<<".\n";
+    cout<<"La caja envolvente del objeto "<<ss<<" ha sido cargada exitosamente con el nombre "<<obj->getNombre()<<".\n";
 }
 
 void envolvente(Malla& mal)
@@ -331,34 +336,32 @@ void envolvente(Malla& mal)
         printf("ERROR: La malla esta vacia\n");
         return;
     }
-    Objeto env = mal.envolvente();
+    Objeto *env;
+    env = &mal.envolvente();
     mal.agregarObjeto(env);
-    cout<<"La caja envolvente de los objetos en memoria se ha generado exitosamente con el nombre "<<env.getNombre()<<".\n";
+    cout<<"La caja envolvente de los objetos en memoria se ha generado exitosamente con el nombre "<<env->getNombre()<<".\n";
 }
 
 void guardarObjeto(Malla& mal,string fileName,string objName)
 {
     const char* rr=fileName.c_str();
-    int i;
-    i=mal.buscarObjeto(objName);
-    if(i==-1)
+    if(!mal.hayObjeto(objName))
     {
         cout << "El objeto " << objName << " no ha sido cargado en memoria.\n";
         return;
     }
     else
     {
+        map<string, Objeto*>::iterator it = mal.buscarObjeto(objName);
         ofstream out (rr);
-        vector<Objeto> x=mal.getObjetos();
-        Objeto temp = x[i];
-        out << temp.getNombre() << endl;
-        vector < punto > vert=temp.getVert();
+        out << it->second->getNombre() << endl;
+        vector < punto > vert=it->second->getVert();
         out << vert.size() << endl;
         for(int i=0; i<vert.size(); i++)
         {
             out << vert[i].x << " " << vert[i].y << " " << vert[i].z << endl;
         }
-        vector < vector<int> > c = temp.getCar();
+        vector < vector<int> > c = it->second->getCar();
         for(int i=0; i<c.size(); i++)
         {
             out << c[i].size() << " ";
@@ -376,21 +379,21 @@ void guardarObjeto(Malla& mal,string fileName,string objName)
 
 void vCercano(Malla& mal, string s, punto v)
 {
-	int pos = mal.buscarObjeto(s);
-	if(pos==-1)
+	if(!mal.hayObjeto(s))
 	{
 		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
 		return;
 	}
-	Objeto obj = mal.getObjetos()[pos];
-    if(obj.getVert().empty())
+	Objeto* obj;
+	obj = mal.buscarObjeto(s)->second;
+    if(obj->getVert().empty())
     {
         cout<<"No hay vertices cargados para este objeto\n";
         return;
     }
-    pair<float, int> par = obj.vCercano(v);
-    punto p = obj.getVert()[par.second];
-    cout<<"El vertice "<<par.second<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj.getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first<<"\n";
+    pair<float, int> par = obj->vCercano(v);
+    punto p = obj->getVert()[par.second];
+    cout<<"El vertice "<<par.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first<<"\n";
 }
 
 void vCercano(Malla& mal, punto v)
@@ -400,31 +403,68 @@ void vCercano(Malla& mal, punto v)
 		cout<<"No hay objetos cargados en la malla\n";
 		return;
 	}
-    pair<pair<float, int>, int > par = mal.vCercano(v);
-    Objeto obj = mal.getObjetos()[par.second];
-    punto p = obj.getVert()[par.second];
-    cout<<"El vertice "<<par.first.second<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj.getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first.first<<"\n";
+    pair<pair<float, int>, map<string, Objeto*>::iterator > par = mal.vCercano(v);
+    Objeto* obj;
+    obj = par.second->second;
+    punto p = obj->getVert()[par.first.second];
+    cout<<"El vertice "<<par.first.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first.first<<"\n";
 }
 
 void vCercanoCaja(Malla& mal, string s)
 {
-	int pos = mal.buscarObjeto(s);
-	if(pos==-1)
+	if(!mal.hayObjeto(s))
 	{
 		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
 		return;
 	}
-	Objeto obj = mal.getObjetos()[pos];
-	Objeto env = obj.envolvente();
+	Objeto* obj;
+	obj = mal.buscarObjeto(s)->second;
+	Objeto* env;
+	env = &obj->envolvente();
 	punto temp1, temp2;
-	int tam = env.getVert().size();
+	int tam = env->getVert().size(), tabs, aux;
 	pair<float, int> par;
-	printf("Esquina\t\t\tVertice\t\t\tDistancia\n");
+	printf("Esquina\t\t\t\tVertice\t\t\t\t\tDistancia\n");
 	for(int i=0 ; i<tam ; ++i)
 	{
-		temp2 = env.getVert()[i];
-		par = obj.vCercano(temp2);
-		temp1 = obj.getVert()[par.second];
-		printf("%d (%.3f,%.3f,%.3f)   %d (%.3f,%.3f,%.3f) %f\n", i, temp2.x, temp2.y, temp2.z, par.second, temp1.x, temp1.y, temp1.z, par.first);
+	    tabs=0;
+		temp2 = env->getVert()[i];
+		par = obj->vCercano(temp2);
+		temp1 = obj->getVert()[par.second];
+		printf("%d (%.3f, ", i+1, temp2.x);
+		aux = cantDig(temp2.x) + 9;
+		printf("%.3f, ", temp2.y);
+		aux += cantDig(temp2.y) + 6;
+		printf("%.3f) ", temp2.z);
+		aux += cantDig(temp2.z) + 6;
+		tabs = aux/8;
+		aux %= 8;
+		tabs = 4 - tabs;
+		for(int j=0 ; j<tabs ; ++j)
+            printf("\t");
+		aux=0;
+		printf("%d\t(%.3f, ", par.second + 1, temp1.x);
+		aux += cantDig(temp1.x) + 15;
+		printf("%.3f, ", temp1.y);
+		aux += cantDig(temp1.y) + 6;
+		printf("%.3f) ", temp1.z);
+		aux += cantDig(temp1.z) + 6;
+		tabs = aux/8;
+		aux %= 8;
+		tabs = 5 - tabs;
+		for(int j=0 ; j<tabs ; ++j)
+            printf("\t");
+		printf("%f\n", par.first);
 	}
+}
+
+int cantDig(int n)
+{
+    int i=0;
+    while(n!=0)
+    {
+        ++i;
+        n/=10;
+    }
+    return i;
 }

@@ -2,6 +2,7 @@
 #define __MALLAS__H__
 #include <vector>
 #include <set>
+#include <map>
 using namespace std;
 
 struct punto
@@ -17,7 +18,7 @@ class Objeto
 public:
     Objeto(string nom);
     void agregarVertice(float xx, float yy,float zz);
-    void agregarCara( vector<int> relaciones);
+    void agregarCara(vector<int>& relaciones);
     int cantAristas();
     void agregarArista(int& x, int& y);
     void definirAristas();
@@ -42,16 +43,17 @@ protected:
 class Malla
 {
 public:
-    void agregarObjeto(Objeto& aux);
-    int buscarObjeto(string ss);
-    vector<Objeto>& getObjetos();
-    pair<pair<float,int>,int> vCercano(punto& v);
+    void agregarObjeto(Objeto* aux);
+    bool hayObjeto(string ss);
+    map<string,Objeto*>::iterator buscarObjeto(string ss);
+    map<string,Objeto*>& getObjetos();
+    pair<pair<float,int>,map<string, Objeto*>::iterator> vCercano(punto& v);
     Objeto& envolvente();
     Objeto& envolvente(string s);
 
     // faltan mas funciones
 protected:
-    vector<Objeto> objetos;
+    map<string, Objeto*> objetos;
     // posible algo de aristas
 };
 
