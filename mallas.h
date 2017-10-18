@@ -13,6 +13,29 @@ struct punto
     float distancia(punto& v);
 };
 
+class Arbol
+{
+    class Nodo
+    {
+    public:
+        Nodo(int n);
+        void setVertice(int n);
+        int getVertice();
+        void setHijo(int n, Nodo* hijo);
+        Nodo* getHijo(int n);
+    private:
+        int vertice;
+        vector<Nodo*> hijos;
+    };
+public:
+    Arbol();
+    void agregarPunto(vector<punto>& vertices, int n, punto& p);
+    Nodo* getRaiz();
+    pair<float, int> buscarCercano(vector<punto>& vertices, punto& v);
+private:
+    Nodo* raiz;
+};
+
 class Objeto
 {
 public:
@@ -26,7 +49,7 @@ public:
     pair<float,int> vCercano(punto& v);
     Objeto& envolvente();
 
-	void cambiarNombre(string s);
+    void cambiarNombre(string s);
     vector<punto>& getVert();
     vector< vector<int> >& getCar();
     set< pair<int, int> >& getAristas();
@@ -34,6 +57,7 @@ public:
     // faltan mas funciones
 protected:
     vector<punto> vertices;
+    Arbol UbicacionVertices;
     vector< vector<int> > caras;
     set<pair<int, int> > aristas;
     string nombre;

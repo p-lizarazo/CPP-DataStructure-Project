@@ -27,7 +27,7 @@ void guardarObjeto(Malla& mal,string fileName,string objName);
 void vCercano(Malla& mal, string s, punto v);
 void vCercano(Malla& mal, punto v);
 void vCercanoCaja(Malla& mal, string s);
-int cantDig(int n);
+int cantDig(float n);
 
 
 int main()
@@ -96,7 +96,7 @@ int main()
             }
             if(act == "v_cercanos_caja")
             {
-            	printf("v_cercanos_caja nombre_objeto\n\nIdentifica los vertices del objeto nombre_objeto mas cercanos (en terminos de la distancia euclidiana) a los puntos (vertices) que definen la respectiva caja envolvente del objeto. Informa en pantalla, en una tabla, las coordenadas de cada una de las esquinas de la caja envolvente, y para cada una de ellas, el indice del vertice mas cercano, los valores actuales de sus coordenadas, y la distancia a la cual se encuentra de la respectiva esquina.\n\n");
+                printf("v_cercanos_caja nombre_objeto\n\nIdentifica los vertices del objeto nombre_objeto mas cercanos (en terminos de la distancia euclidiana) a los puntos (vertices) que definen la respectiva caja envolvente del objeto. Informa en pantalla, en una tabla, las coordenadas de cada una de las esquinas de la caja envolvente, y para cada una de ellas, el indice del vertice mas cercano, los valores actuales de sus coordenadas, y la distancia a la cual se encuentra de la respectiva esquina.\n\n");
                 ss.str("");
                 continue;
             }
@@ -167,33 +167,32 @@ int main()
         }
         if(act == "v_cercano")
         {
-        	stringstream ss2;
-        	ss2.str("");
+            stringstream ss2;
+            ss2.str("");
             for(int i = 0 ; i<3 ; ++i)
             {
-		        act = "";
-		        ss >> act;
-		        if(act=="")
-		        {
-		        	cout<<"No hay argumentos suficientes\n\n";
-		        	ss.str("");
-		        	continue;
-		        }
-		        for(int j = 0 ; j<act.size() ; ++j)
-		        	if((act[j]<'0' || act[j]>'9') && act[j]!='.' && act[j]!=',')
-		        	{
-		        		cout<<"Parametros de entrada invalida\n\n";
-		        		ss.str("");
-		        		continue;
-		        	}
-		        ss2 << act;
-		        ss2 << " ";
+                act = "";
+                ss >> act;
+                if(act=="")
+                {
+                    cout<<"No hay argumentos suficientes\n\n";
+                    ss.str("");
+                    continue;
+                }
+                for(int j = 0 ; j<act.size() ; ++j)
+                    if((act[j]<'0' || act[j]>'9') && act[j]!='.' && act[j]!=',' && act[j]!='-')
+                    {
+                        cout<<"Parametros de entrada invalida\n\n";
+                        ss.str("");
+                        continue;
+                    }
+                ss2 << act;
+                ss2 << " ";
             }
             punto v;
             ss2 >> v.x;
             ss2 >> v.y;
             ss2 >> v.z;
-            cout<<v.x<<" "<<v.y<<" "<<v.z<<"\n";
             act = "";
             ss >> act;
             if(act=="")
@@ -379,13 +378,13 @@ void guardarObjeto(Malla& mal,string fileName,string objName)
 
 void vCercano(Malla& mal, string s, punto v)
 {
-	if(!mal.hayObjeto(s))
-	{
-		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
-		return;
-	}
-	Objeto* obj;
-	obj = mal.buscarObjeto(s)->second;
+    if(!mal.hayObjeto(s))
+    {
+        cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
+        return;
+    }
+    Objeto* obj;
+    obj = mal.buscarObjeto(s)->second;
     if(obj->getVert().empty())
     {
         cout<<"No hay vertices cargados para este objeto\n";
@@ -393,75 +392,79 @@ void vCercano(Malla& mal, string s, punto v)
     }
     pair<float, int> par = obj->vCercano(v);
     punto p = obj->getVert()[par.second];
-    cout<<"El vertice "<<par.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first<<"\n";
+    cout<<"El vertice "<<par.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.z<<"), a una distancia de "<<par.first<<"\n";
 }
 
 void vCercano(Malla& mal, punto v)
 {
-	if(mal.getObjetos().empty())
-	{
-		cout<<"No hay objetos cargados en la malla\n";
-		return;
-	}
+    if(mal.getObjetos().empty())
+    {
+        cout<<"No hay objetos cargados en la malla\n";
+        return;
+    }
     pair<pair<float, int>, map<string, Objeto*>::iterator > par = mal.vCercano(v);
     Objeto* obj;
     obj = par.second->second;
     punto p = obj->getVert()[par.first.second];
-    cout<<"El vertice "<<par.first.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.y<<"), a una distancia de "<<par.first.first<<"\n";
+    cout<<"El vertice "<<par.first.second+1<<" ("<<p.x<<","<<p.y<<","<<p.z<<") del objeto "<<obj->getNombre()<<" es el mas cercano al punto ("<<v.x<<","<<v.y<<","<<v.z<<"), a una distancia de "<<par.first.first<<"\n";
 }
 
 void vCercanoCaja(Malla& mal, string s)
 {
-	if(!mal.hayObjeto(s))
-	{
-		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
-		return;
-	}
-	Objeto* obj;
-	obj = mal.buscarObjeto(s)->second;
-	Objeto* env;
-	env = &obj->envolvente();
-	punto temp1, temp2;
-	int tam = env->getVert().size(), tabs, aux;
-	pair<float, int> par;
-	printf("Esquina\t\t\t\tVertice\t\t\t\t\tDistancia\n");
-	for(int i=0 ; i<tam ; ++i)
-	{
-	    tabs=0;
-		temp2 = env->getVert()[i];
-		par = obj->vCercano(temp2);
-		temp1 = obj->getVert()[par.second];
-		printf("%d (%.3f, ", i+1, temp2.x);
-		aux = cantDig(temp2.x) + 9;
-		printf("%.3f, ", temp2.y);
-		aux += cantDig(temp2.y) + 6;
-		printf("%.3f) ", temp2.z);
-		aux += cantDig(temp2.z) + 6;
-		tabs = aux/8;
-		aux %= 8;
-		tabs = 4 - tabs;
-		for(int j=0 ; j<tabs ; ++j)
+    if(!mal.hayObjeto(s))
+    {
+        cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
+        return;
+    }
+    Objeto* obj;
+    obj = mal.buscarObjeto(s)->second;
+    Objeto* env;
+    env = &obj->envolvente();
+    punto temp1, temp2;
+    int tam = env->getVert().size(), tabs, aux;
+    pair<float, int> par;
+    printf("Esquina\t\t\t\tVertice\t\t\t\t\tDistancia\n");
+    for(int i=0 ; i<tam ; ++i)
+    {
+        tabs=0;
+        temp2 = env->getVert()[i];
+        par = obj->vCercano(temp2);
+        temp1 = obj->getVert()[par.second];
+        printf("%d (%.3f, ", i+1, temp2.x);
+        aux = cantDig(temp2.x) + 9;
+        printf("%.3f, ", temp2.y);
+        aux += cantDig(temp2.y) + 6;
+        printf("%.3f) ", temp2.z);
+        aux += cantDig(temp2.z) + 6;
+        tabs = aux/8;
+        aux %= 8;
+        tabs = 4 - tabs;
+        for(int j=0 ; j<tabs ; ++j)
             printf("\t");
-		aux=0;
-		printf("%d\t(%.3f, ", par.second + 1, temp1.x);
-		aux += cantDig(temp1.x) + 15;
-		printf("%.3f, ", temp1.y);
-		aux += cantDig(temp1.y) + 6;
-		printf("%.3f) ", temp1.z);
-		aux += cantDig(temp1.z) + 6;
-		tabs = aux/8;
-		aux %= 8;
-		tabs = 5 - tabs;
-		for(int j=0 ; j<tabs ; ++j)
+        aux=0;
+        printf("%d\t(%.3f, ", par.second + 1, temp1.x);
+        aux += cantDig(temp1.x) + 15;
+        printf("%.3f, ", temp1.y);
+        aux += cantDig(temp1.y) + 6;
+        printf("%.3f) ", temp1.z);
+        aux += cantDig(temp1.z) + 6;
+        tabs = aux/8;
+        aux %= 8;
+        tabs = 5 - tabs;
+        for(int j=0 ; j<tabs ; ++j)
             printf("\t");
-		printf("%f\n", par.first);
-	}
+        printf("%f\n", par.first);
+    }
 }
 
-int cantDig(int n)
+int cantDig(float n)
 {
     int i=0;
-    while(n!=0)
+    if(n<0)
+        i++;
+    if((int)n==0)
+        return i+1;
+    while((int)n!=0)
     {
         ++i;
         n/=10;

@@ -3,26 +3,261 @@
 
 #include <vector>
 #include <map>
+#include <queue>
 #include <sstream>
 #include <math.h>
 #include <iostream>
 
 float punto::distancia(punto& v)
 {
-	float xx, yy, zz, dist;
-	xx = x-v.x;
-	xx *= xx;
-	yy = y-v.y;
-	yy *= yy;
-	zz = z-v.z;
-	zz *= zz;
-	dist = sqrt(xx+yy+zz);
-	return dist;
+    float xx, yy, zz, dist;
+    xx = x-v.x;
+    xx *= xx;
+    yy = y-v.y;
+    yy *= yy;
+    zz = z-v.z;
+    zz *= zz;
+    dist = sqrt(xx+yy+zz);
+    return dist;
+}
+
+Arbol::Nodo::Nodo(int n)
+{
+    this->vertice = n;
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+    hijos.push_back(NULL);
+}
+void Arbol::Nodo::setVertice(int n)
+{
+    this->vertice = n;
+}
+int Arbol::Nodo::getVertice()
+{
+    return this->vertice;
+}
+void Arbol::Nodo::setHijo(int n, Nodo* hijo)
+{
+    this->hijos[n] = hijo;
+}
+
+Arbol::Nodo* Arbol::Nodo::getHijo(int n)
+{
+    return this->hijos[n];
+}
+
+Arbol::Arbol()
+{
+    this->raiz = new Nodo(0);
+}
+void Arbol::agregarPunto(vector<punto>& vertices, int n, punto& p)
+{
+    Nodo* aux = raiz;
+    Nodo* padre;
+    int i;
+    punto* temp;
+    while(aux != NULL)
+    {
+        padre = aux;
+        temp = &vertices[aux->getVertice()];
+        if(p.x > temp->x)
+        {
+            if(p.y > temp->y)
+            {
+                if(p.z > temp->z)
+                {
+                    i=0;
+                    aux = aux->getHijo(0);
+                }
+                else
+                {
+                    i=1;
+                    aux = aux->getHijo(1);
+                }
+            }
+            else
+            {
+                if(p.z > temp->z)
+                {
+                    i=2;
+                    aux = aux->getHijo(2);
+                }
+                else
+                {
+                    i=3;
+                    aux = aux->getHijo(3);
+                }
+            }
+        }
+        else
+        {
+            if(p.y > temp->y)
+            {
+                if(p.z > temp->z)
+                {
+                    i=4;
+                    aux = aux->getHijo(4);
+                }
+                else
+                {
+                    i=5;
+                    aux = aux->getHijo(5);
+                }
+            }
+            else
+            {
+                if(p.z > temp->z)
+                {
+                    i=6;
+                    aux = aux->getHijo(6);
+                }
+                else
+                {
+                    i=7;
+                    aux = aux->getHijo(7);
+                }
+            }
+        }
+    }
+    aux = new Nodo(n);
+    padre->setHijo(i, aux);
+}
+Arbol::Nodo* Arbol::getRaiz()
+{
+    return this->raiz;
+}
+pair<float, int> Arbol::buscarCercano(vector<punto>& vertices, punto& v)
+{
+    pair<float, int> par;
+    par.first = vertices[this->getRaiz()->getVertice()].distancia(v);
+    par.second = this->getRaiz()->getVertice();
+    float dist;
+    punto* temp;
+    int tempo;
+    Nodo* aux;
+    queue<Nodo*> q;
+    queue<int> qi;
+    queue<bool> qb;
+    vector<int> busq;
+    q.push(this->getRaiz());
+    qi.push(0);
+    aux = this->getRaiz();
+    while(aux!=NULL)
+    {
+        temp = &vertices[aux->getVertice()];
+        if(v.x > temp->x)
+        {
+            if(v.y > temp->y)
+            {
+                if(v.z > temp->z)
+                {
+                    busq.push_back(0);
+                    aux = aux->getHijo(0);
+                    continue;
+                }
+                else
+                {
+                    busq.push_back(1);
+                    aux = aux->getHijo(1);
+                    continue;
+                }
+            }
+            else
+            {
+                if(v.z > temp->z)
+                {
+                    busq.push_back(2);
+                    aux = aux->getHijo(2);
+                    continue;
+                }
+                else
+                {
+                    busq.push_back(3);
+                    aux = aux->getHijo(3);
+                    continue;
+                }
+            }
+        }
+        else
+        {
+            if(v.y > temp->y)
+            {
+                if(v.z > temp->z)
+                {
+                    busq.push_back(4);
+                    aux = aux->getHijo(4);
+                    continue;
+                }
+                else
+                {
+                    busq.push_back(5);
+                    aux = aux->getHijo(5);
+                    continue;
+                }
+            }
+            else
+            {
+                if(v.z > temp->z)
+                {
+                    busq.push_back(6);
+                    aux = aux->getHijo(6);
+                    continue;
+                }
+                else
+                {
+                    busq.push_back(7);
+                    aux = aux->getHijo(7);
+                    continue;
+                }
+            }
+        }
+    }
+    //Una vez acabado el ciclo sabemos exactamente en que cuadrante está ubicado el punto, por lo tanto sabemos cuales son los elementos que debemos calcular
+    while(!q.empty())
+    {
+        aux = q.front();
+        tempo = qi.front();
+        qi.pop();
+        q.pop();
+        dist = vertices[aux->getVertice()].distancia(v);
+        if(dist < par.first)
+        {
+            par.first = dist;
+            par.second = aux->getVertice();
+        }
+        if(tempo!=-1)
+        {
+            for(int i=0 ; i<8 ; ++i)
+                if(aux->getHijo(i)!=NULL)
+                {
+                    q.push(aux->getHijo(i));
+                    if(i != busq[tempo+1])
+                        qi.push(tempo+1);
+                    else
+                        qi.push(-1);
+                }
+        }
+        else
+        {
+            for(int i=0 ; i<8 ; ++i)
+                if(aux->getHijo(i)!=NULL)
+                {
+                    q.push(aux->getHijo(i));
+                    qi.push(-1);
+                }
+        }
+    }
+    return par;
 }
 
 Objeto::Objeto(string nom)
 {
-    nombre=nom;
+    this->nombre=nom;
 }
 
 void Objeto::agregarVertice(float xx,float yy,float zz)
@@ -32,6 +267,7 @@ void Objeto::agregarVertice(float xx,float yy,float zz)
     aux.y=yy;
     aux.z=zz;
     vertices.push_back(aux);
+    this->UbicacionVertices.agregarPunto(vertices, vertices.size()-1, aux);
 }
 
 void Objeto::agregarCara(vector<int>& relaciones)
@@ -105,27 +341,12 @@ void Objeto::obtVertices(vector<float>& puntos)
 
 pair<float, int> Objeto::vCercano(punto& v)
 {
-    pair<float, int> par;
-    float dist;
-    punto temp;
-    par.first = vertices[0].distancia(v);
-    par.second = 0;
-    int tam = vertices.size();
-    for(int i=1 ; i<tam ; ++i)
-    {
-    	dist = vertices[i].distancia(v);
-    	if(dist<par.first)
-    	{
-    		par.first = dist;
-    		par.second = i;
-    	}
-    }
-    return par;
+    return this->UbicacionVertices.buscarCercano(this->vertices, v);
 }
 
 void Objeto::cambiarNombre(string s)
 {
-	nombre = s;
+    nombre = s;
 }
 
 vector<punto>& Objeto::getVert()
@@ -251,21 +472,21 @@ Objeto& Malla::envolvente()
 
 pair<pair<float,int>,map<string, Objeto*>::iterator> Malla::vCercano(punto& v)
 {
-	pair<pair<float, int>, map<string, Objeto*>::iterator > fin;
-	pair<float, int> par;
-	int tam = objetos.size();
-	fin.first = objetos.begin()->second->vCercano(v);
-	fin.second = objetos.begin();
-	for(map<string, Objeto*>::iterator it=objetos.begin() ; it!=objetos.end() ; ++it)
-	{
-		par = it->second->vCercano(v);
-		if(par.first < fin.first.first)
-		{
-			fin.first = par;
-			fin.second = it;
-		}
-	}
-	return fin;
+    pair<pair<float, int>, map<string, Objeto*>::iterator > fin;
+    pair<float, int> par;
+    int tam = objetos.size();
+    fin.first = objetos.begin()->second->vCercano(v);
+    fin.second = objetos.begin();
+    for(map<string, Objeto*>::iterator it=objetos.begin() ; it!=objetos.end() ; ++it)
+    {
+        par = it->second->vCercano(v);
+        if(par.first < fin.first.first)
+        {
+            fin.first = par;
+            fin.second = it;
+        }
+    }
+    return fin;
 }
 
 map<string, Objeto*>& Malla::getObjetos()
