@@ -6,6 +6,9 @@
 #include <sstream>
 #include <math.h>
 #include <iostream>
+#include <queue>
+#include <stack>
+#include <limits>
 
 float punto::distancia(punto& v)
 {
@@ -20,9 +23,10 @@ float punto::distancia(punto& v)
 	return dist;
 }
 
-Objeto::Objeto(string nom)
+Objeto::Objeto(string nom, int cant)
 {
     nombre=nom;
+    grafo.resize(cant);
 }
 
 void Objeto::agregarVertice(float xx,float yy,float zz)
@@ -44,6 +48,11 @@ int Objeto::cantAristas()
     return aristas.size();
 }
 
+void Objeto::definirCentro(punto& pnt)
+{
+    centro = this->vCercano(pnt);
+}
+
 void Objeto::agregarArista(int& x, int& y)
 {
     pair<int, int> aux;
@@ -51,19 +60,41 @@ void Objeto::agregarArista(int& x, int& y)
     {
         aux.first = x;
         aux.second = y;
-        aristas.insert(aux);
+        if(aristas.find(aux)==aristas.end())
+        {
+            float dist;
+            dist = vertices[x].distancia(vertices[y]);
+            grafo[x].push_back(pair<float, int>(dist, y));
+            grafo[y].push_back(pair<float, int>(dist, x));
+            aristas.insert(aux);
+        }
+
         return;
     }
     else if(y<x)
     {
         aux.second = x;
         aux.first = y;
-        aristas.insert(aux);
+        if(aristas.find(aux)==aristas.end())
+        {
+            float dist;
+            dist = vertices[x].distancia(vertices[y]);
+            grafo[x].push_back(pair<float, int>(dist, y));
+            grafo[y].push_back(pair<float, int>(dist, x));
+            aristas.insert(aux);
+        }
         return;
     }
     aux.first = x;
     aux.second = y;
-    aristas.insert(aux);
+    if(aristas.find(aux)==aristas.end())
+    {
+        float dist;
+        dist = vertices[x].distancia(vertices[y]);
+        grafo[x].push_back(pair<float, int>(dist, y));
+        grafo[y].push_back(pair<float, int>(dist, x));
+        aristas.insert(aux);
+    }
 }
 
 void Objeto::definirAristas()
@@ -101,6 +132,51 @@ void Objeto::obtVertices(vector<float>& puntos)
         if(puntos[5]>n.z)
             puntos[5]=n.z;
     }
+}
+
+pair<vector<int>*, float> Objeto::ruta(int v, int final)
+{
+    vector<float> dist (vertices.size(), numeric_limits<float>::max());
+    priority_queue<pair<float, int>, vector<pair<float, int> >, greater<pair<float, int> > > pq;
+    vector<int> *padres = new vector<int> (dist.size(), -1);
+    pq.push(pair<float, int>(0, v));
+    dist[v] = 0;
+    while (!pq.empty()) {
+        pair<float, int> top = pq.top();
+        pq.pop();
+        float d = top.first;
+        int u = top.second;
+        if (d == dist[u])
+        {
+            int tam = grafo[u].size();
+            for(int i=0 ; i<tam ; ++i)
+            {
+                int destino = grafo[u][i].second;
+                float distDestino = grafo[u][i].first;
+                if(dist[u]+distDestino < dist[destino])
+                {
+                    dist[destino] = dist[u] + distDestino;
+                    (*padres)[destino] = u;
+                    pq.push(pair<float, int>(dist[destino], destino));
+                }
+            }
+        }
+    }
+    stack<int> orden;
+    int temporal = final;
+    while((*padres)[temporal] != -1)
+    {
+        orden.push(temporal);
+        temporal = (*padres)[temporal];
+    }
+    orden.push(temporal);
+    padres->clear();
+    while(!orden.empty())
+    {
+        padres->push_back(orden.top());
+        orden.pop();
+    }
+    return pair<vector<int>*, float>(padres, dist[final]);
 }
 
 pair<float, int> Objeto::vCercano(punto& v)
@@ -147,6 +223,11 @@ string& Objeto::getNombre()
     return nombre;
 }
 
+pair<float, int>& Objeto::getCentro()
+{
+    return centro;
+}
+
 void Malla::agregarObjeto(Objeto* aux)
 {
     objetos[aux->getNombre()] = aux;
@@ -168,7 +249,7 @@ Objeto& Objeto::envolvente()
 {
     vector<float> fin (6);
     obtVertices(fin);
-    Objeto *env = new Objeto ("Envolvente_"+nombre);
+    Objeto *env = new Objeto ("Envolvente_"+nombre, 8);
     //Agregamos los 8 vertices al objeto combinando coordenadas
     (*env).agregarVertice(fin[0], fin[1], fin[2]);  //x y z
     (*env).agregarVertice(fin[0], fin[1], fin[5]);  //x y -z
@@ -188,7 +269,16 @@ Objeto& Objeto::envolvente()
         r.push_back(quemador[3*i+2]);
         (*env).agregarCara(r);
     }
+    double xtotal=0, ytotal=0, ztotal=0;
+    xtotal+= 4*(fin[0]+fin[3])/8;
+    ytotal+= 4*(fin[1]+fin[4])/8;
+    ztotal+= 4*(fin[2]+fin[5])/8;
+    punto pnt;
+    pnt.x = xtotal;
+    pnt.y = ytotal;
+    pnt.z = ztotal;
     env->definirAristas();
+    env->definirCentro(pnt);
     return *env;
 }
 
@@ -225,7 +315,7 @@ Objeto& Malla::envolvente()
         ss << a;
         str = ss.str();
     }
-    Objeto *env = new Objeto ("Envolvente_Malla_"+str);
+    Objeto *env = new Objeto ("Envolvente_Malla_"+str, 8);
     //Agregamos los 8 vertices al objeto combinando coordenadas
     (*env).agregarVertice(fin[0], fin[1], fin[2]);  //x y z
     (*env).agregarVertice(fin[0], fin[1], fin[5]);  //x y -z
@@ -245,7 +335,16 @@ Objeto& Malla::envolvente()
         r.push_back(quemador[3*i+2]);
         (*env).agregarCara(r);
     }
+    double xtotal=0, ytotal=0, ztotal=0;
+    xtotal+= 4*(fin[0]+fin[3])/8;
+    ytotal+= 4*(fin[1]+fin[4])/8;
+    ztotal+= 4*(fin[2]+fin[5])/8;
+    punto pnt;
+    pnt.x = xtotal;
+    pnt.y = ytotal;
+    pnt.z = ztotal;
     env->definirAristas();
+    env->definirCentro(pnt);
     return *env;
 }
 

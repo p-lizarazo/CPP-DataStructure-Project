@@ -27,6 +27,8 @@ void guardarObjeto(Malla& mal,string fileName,string objName);
 void vCercano(Malla& mal, string s, punto v);
 void vCercano(Malla& mal, punto v);
 void vCercanoCaja(Malla& mal, string s);
+void rutaVertices(Malla& mal, string s, int v, int x);
+void rutaCentro(Malla& mal, string s, int v);
 int cantDig(int n);
 
 
@@ -48,7 +50,7 @@ int main()
             ss >> act;
             if(act == "ayuda")
             {
-                printf("Los comandos validos son los siguientes:\ncargar\t\tlistado\t\tenvolvente\ndescargar\tguardar\t\tsalir\nv_cercano\tv_cercanos_caja\n\n");
+                printf("Los comandos validos son los siguientes:\ncargar\t\tlistado\t\tenvolvente\ndescargar\tguardar\t\tsalir\nv_cercano\tv_cercanos_caja\truta_corta\nruta_corta_centro\n");
                 ss.str("");
                 continue;
             }
@@ -97,6 +99,18 @@ int main()
             if(act == "v_cercanos_caja")
             {
             	printf("v_cercanos_caja nombre_objeto\n\nIdentifica los vertices del objeto nombre_objeto mas cercanos (en terminos de la distancia euclidiana) a los puntos (vertices) que definen la respectiva caja envolvente del objeto. Informa en pantalla, en una tabla, las coordenadas de cada una de las esquinas de la caja envolvente, y para cada una de ellas, el indice del vertice mas cercano, los valores actuales de sus coordenadas, y la distancia a la cual se encuentra de la respectiva esquina.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "ruta_corta")
+            {
+            	printf("ruta_corta i1 i2 nombre_objeto\n\n Identifica los indices de los vertices que conforman la ruta mas corta entre los vertices dados para el objeto nombre_objeto. La distancia entre los vertices esta medida en terminos de la distancia euclidiana. Informa, ademas, la distancia total de la ruta calculada.\n\n");
+                ss.str("");
+                continue;
+            }
+            if(act == "ruta_corta_centro")
+            {
+            	printf("ruta_corta_centro i1 nombre_objeto\n\nIdentifica los indices de los vertices que conforman la ruta mas corta entre el vertice dado y el centro del objeto nombre_objeto. El vertice centro del objeto se identifica calculando primero el centroide (coordenadas promedio) de todos los vertices del objeto, y buscando luego el vertice más cercano a ese centroide. La distancia entre los vertices esta medida en terminos de la distancia euclidiana. Informa, ademas, la distancia total de la ruta calculada.\n\n");
                 ss.str("");
                 continue;
             }
@@ -177,18 +191,26 @@ int main()
 		        {
 		        	cout<<"No hay argumentos suficientes\n\n";
 		        	ss.str("");
+		        	acc=false;
 		        	continue;
 		        }
+		        if(!acc)
+                    break;
 		        for(int j = 0 ; j<act.size() ; ++j)
 		        	if((act[j]<'0' || act[j]>'9') && act[j]!='.' && act[j]!=',')
 		        	{
 		        		cout<<"Parametros de entrada invalida\n\n";
 		        		ss.str("");
-		        		continue;
+		        		acc=false;
+		        		break;;
 		        	}
+		        if(!acc)
+                    break;
 		        ss2 << act;
 		        ss2 << " ";
             }
+            if(!acc)
+                continue;
             punto v;
             ss2 >> v.x;
             ss2 >> v.y;
@@ -214,6 +236,94 @@ int main()
                 printf("No hay argumentos suficientes para la funcion v_cercanos_caja\n\n");
             else
                 vCercanoCaja(mal, act);
+            ss.str("");
+            continue;
+        }
+        if(act == "ruta_corta")
+        {
+            ss >> act;
+            if(act == "")
+                printf("No hay argumentos suficientes para la funcion ruta_corta\n\n");
+            else
+            {
+                for(int j = 0 ; j<act.size() ; ++j)
+		        	if(act[j]<'0' || act[j]>'9')
+		        	{
+		        		cout<<"Parametros de entrada invalida\n\n";
+		        		ss.str("");
+		        		acc=false;
+		        		break;
+		        	}
+                if(!acc)
+                    continue;
+                int n;
+                stringstream ss2;
+                ss2.str("");
+                ss2 << act;
+                ss2 << " ";
+                ss2 >> n;
+                act = "";
+                ss >> act;
+                if(act == "")
+                    printf("No hay argumentos suficientes para la funcion ruta_corta\n\n");
+                else
+                {
+                    for(int j = 0 ; j<act.size() ; ++j)
+                        if(act[j]<'0' || act[j]>'9')
+                        {
+                            cout<<"Parametros de entrada invalida\n\n";
+                            ss.str("");
+                            acc=false;
+                            break;
+                        }
+                    if(!acc)
+                        continue;
+                    int n2;
+                    ss2.str("");
+                    ss2 << act;
+                    ss2 << " ";
+                    ss2 >> n2;
+                    act = "";
+                    ss >> act;
+                    if(act == "")
+                        printf("No hay argumentos suficientes para la funcion ruta_corta\n\n");
+                    else
+                        rutaVertices(mal, act, n, n2);
+                }
+            }
+            ss.str("");
+            continue;
+        }
+        if(act == "ruta_corta_centro")
+        {
+            ss >> act;
+            if(act == "")
+                printf("No hay argumentos suficientes para la funcion ruta_corta_centro\n\n");
+            else
+            {
+                for(int j = 0 ; j<act.size() ; ++j)
+		        	if(act[j]<'0' || act[j]>'9')
+		        	{
+		        		cout<<"Parametros de entrada invalida\n\n";
+		        		acc = false;
+		        		ss.str("");
+		        		break;
+		        	}
+                if(!acc)
+                    continue;
+                int n;
+                stringstream ss2;
+                ss2.str("");
+                ss2 << act;
+                ss2 << " ";
+                ss2 >> n;
+                act = "";
+                ss >> act;
+                if(act == "")
+                    printf("No hay argumentos suficientes para la funcion ruta_corta\n\n");
+                else
+                    rutaCentro(mal, act, n);
+            }
             ss.str("");
             continue;
         }
@@ -245,21 +355,26 @@ void cargarArchivo(Malla& mal, string ss)
             in.close();
             return;
         }
-        Objeto *temp = new Objeto(nom);
-        int cant;
+        int cant, tam;
         in >> cant;
+        tam = cant;
         if(cant == 0)
         {
             cout << "El archivo no contiene un objeto 3D valido\n";
             in.close();
             return;
         }
+        Objeto *temp = new Objeto(nom, cant);
+        double xtotal=0, ytotal=0, ztotal=0;
         while(cant--)
         {
             float x,y,z;
             in>>x;
             in>>y;
             in>>z;
+            xtotal+=x;
+            ytotal+=y;
+            ztotal+=z;
             (*temp).agregarVertice(x,y,z);
         }
         while(in>>cant && cant!=-1)
@@ -273,7 +388,15 @@ void cargarArchivo(Malla& mal, string ss)
             }
             temp->agregarCara(*vertices);
         }
+        xtotal/=tam;
+        ytotal/=tam;
+        ztotal/=tam;
+        punto pnt;
+        pnt.x = xtotal;
+        pnt.y = ytotal;
+        pnt.z = ztotal;
         temp->definirAristas();
+        temp->definirCentro(pnt);
         mal.agregarObjeto(temp);
         cout << "El objeto " << nom << " ha sido cargado exitosamente del archivo " << rr <<endl;
         in.close();
@@ -456,6 +579,61 @@ void vCercanoCaja(Malla& mal, string s)
             printf("\t");
 		printf("%f\n", par.first);
 	}
+}
+
+void rutaVertices(Malla& mal, string s, int v, int x)
+{
+	if(!mal.hayObjeto(s))
+	{
+		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
+		return;
+	}
+	Objeto* obj;
+	obj = mal.buscarObjeto(s)->second;
+	int aux = obj->getVert().size();
+    if(aux < v || aux < x || v<1 || x<1)
+    {
+        cout<<"Algunos de los indices de vertices estan fuera de rango para el objeto "<<s<<"\n";
+        return;
+    }
+    vector<int> *ruta;
+    pair<vector<int>* , float> resultado;
+    resultado = obj->ruta(v-1, x-1);
+    ruta = resultado.first;
+    int tam = ruta->size();
+    cout<<"La ruta mas corta que conecta los vertices "<<v<<" y "<<x<<" del objeto "<<s<<" pasa por: "<<(*ruta)[0]+1;
+    for(int i=1 ; i<tam ; ++i)
+    {
+        cout<<", "<<(*ruta)[i]+1;
+    }
+    cout<<"; con una longitud de "<<resultado.second<<".\n";
+}
+
+void rutaCentro(Malla& mal, string s, int v)
+{
+	if(!mal.hayObjeto(s))
+	{
+		cout<<"El objeto "<<s<<" no esta cargado en memoria\n";
+		return;
+	}
+	Objeto* obj;
+	obj = mal.buscarObjeto(s)->second;
+    if(obj->getVert().size() < v || v<1)
+    {
+        cout<<"El indice del vertice no esta en el objeto "<<s<<"\n";
+        return;
+    }
+    vector<int> *ruta;
+    pair<vector<int>* , float> resultado;
+    resultado = obj->ruta(v-1, obj->getCentro().second);
+    ruta = resultado.first;
+    int tam = ruta->size();
+    cout<<"La ruta mas corta que conecta el vertice "<<v<<" con el centro del objeto "<<s<<" pasa por: "<<(*ruta)[0]+1;
+    for(int i=1 ; i<tam ; ++i)
+    {
+        cout<<", "<<(*ruta)[i]+1;
+    }
+    cout<<"; con una longitud de "<<resultado.second<<".\n";
 }
 
 int cantDig(int n)

@@ -16,13 +16,15 @@ struct punto
 class Objeto
 {
 public:
-    Objeto(string nom);
+    Objeto(string nom, int cant);
     void agregarVertice(float xx, float yy,float zz);
     void agregarCara(vector<int>& relaciones);
     int cantAristas();
+    void definirCentro(punto& pnt);
     void agregarArista(int& x, int& y);
     void definirAristas();
     void obtVertices(vector<float>& puntos);
+    pair<vector<int>*, float> ruta(int v, int final);
     pair<float,int> vCercano(punto& v);
     Objeto& envolvente();
 
@@ -30,13 +32,16 @@ public:
     vector<punto>& getVert();
     vector< vector<int> >& getCar();
     set< pair<int, int> >& getAristas();
+    pair<float, int>& getCentro();
     string& getNombre();
     // faltan mas funciones
 protected:
     vector<punto> vertices;
     vector< vector<int> > caras;
+    vector<vector<pair<float, int> > > grafo;
     set<pair<int, int> > aristas;
     string nombre;
+    pair<float, int> centro;
     // posible algo de aristas
 };
 
